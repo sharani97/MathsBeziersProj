@@ -1,17 +1,17 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Casteljau : MonoBehaviour
+public class Castlejau : MonoBehaviour
 {
-
     #region Members
 
     //PUBLIC
     public List<Transform> ControlPointsTransform;
     public Color MaterialColor;
     public float s = 0.2f;
-    public GameObject prefab;
+    public GameObject prefab,cp;
 
     //PRIVATE
     private List<Vector3> bezierCurvePoints;
@@ -27,18 +27,60 @@ public class Casteljau : MonoBehaviour
         bezierCurvePoints = new List<Vector3>();
     }
 
-    
+
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKey("z"))
+        if(s < 0f)
+        {
+            s = 0f;
+        }else if(s > 1f)
+        {
+            s = 1f;
+        }
+        if (Input.GetKeyDown("z"))
         {
             TryDrawCurve();
         }
+        if (Input.GetKeyDown("r"))
+        {
+            ResetCurve();
+        }
+        if (Input.GetKeyDown("x"))
+        {
+            bezierCurvePoints = new List<Vector3>();
+            ControlPointsTransform = new List<Transform>();
+        }
+
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            s -= 0.1f;
+        }
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            s += 0.1f;
+        }
+
+        if (Input.GetButtonDown("Fire1"))
+        {
+            Vector3 mousePos = Input.mousePosition;
+            mousePos.z = 10f;
+            Vector3 objectPos = Camera.main.ScreenToWorldPoint(mousePos);
+            GameObject controlPoint = Instantiate(cp, objectPos, Quaternion.identity);
+            ControlPointsTransform.Add(controlPoint.transform);
+        }
+
     }
 
 
-
+    public void ResetCurve()
+    {
+        GameObject[] points = GameObject.FindGameObjectsWithTag("points");
+        for(int i = 0; i < points.Length; i++)
+        {
+            Destroy(points[i]);
+        }
+    }
     public void TryDrawCurve()
     {
         for (t = 0; t <= 1; t += s)
