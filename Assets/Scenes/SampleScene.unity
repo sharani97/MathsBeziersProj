@@ -619,7 +619,8 @@ MonoBehaviour:
   - {fileID: 585691229}
   - {fileID: 1236212919}
   MaterialColor: {r: 0, g: 0, b: 0, a: 0}
-  stepLength: 5
+  s: 0.2
+  prefab: {fileID: 5744692602420254133, guid: 6dd4517297595624f93106f1858bf529, type: 3}
 --- !u!4 &1259939377
 Transform:
   m_ObjectHideFlags: 0
