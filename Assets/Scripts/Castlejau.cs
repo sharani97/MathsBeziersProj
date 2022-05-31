@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class Castlejau : MonoBehaviour
 {
@@ -10,127 +9,129 @@ public class Castlejau : MonoBehaviour
 
     //PUBLIC
     public List<Transform> ControlPointsTransform;
+    public Color MaterialColor;
     public float s = 0.2f;
     public GameObject prefab,cp;
-    public Slider slider;
 
     //PRIVATE
+    [SerializeField]
+    private Dictionary<List<Transform>, List<GameObject>> Dic = new Dictionary<List<Transform>, List<GameObject>>();
+    private List<GameObject> objectPositions = new List<GameObject>();
     private List<Vector3> bezierCurvePoints;
     private float t;
-    private bool isControlPointPlacable = true;
 
     #endregion Members
 
     void Start()
     {
         bezierCurvePoints = new List<Vector3>();
-        slider.value = s;
     }
 
+
+    // Update is called once per frame
     void Update()
     {
-
-        s = slider.value;
-
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             s -= 0.005f;
             if (s <= 0) s = 0.001f;
         }
-
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
             s += 0.005f;
             if (s >= 1) s = 0.999f;
         }
-
         if (Input.GetKeyDown("z"))
         {
             TryDrawCurve();
         }
-
         if (Input.GetKeyDown("r"))
         {
             ResetCurve();
         }
-
         if (Input.GetKeyDown("x"))
         {
-            FlushLists();
+            Dic.TryAdd(ControlPointsTransform, objectPositions);
+
+            GameObject parent = new GameObject();
+            foreach(GameObject obj in objectPositions)
+            {
+                obj.transform.parent = parent.transform;
+            }
+            foreach (Transform obj in ControlPointsTransform)
+            {
+                obj.parent = parent.transform;
+            }
+
+
+            bezierCurvePoints = new List<Vector3>();
+            objectPositions = new List<GameObject>();
+            ControlPointsTransform = new List<Transform>();
+            
         }
 
-        
-        if (Input.GetKeyDown("a"))
-        {
-            isControlPointPlacable = !isControlPointPlacable;
-        }
 
         if (Input.GetButtonDown("Fire1"))
         {
-            if (isControlPointPlacable)
-            {0
-                Vector3 mousePos = Input.mousePosition;
-
-                mousePos.z = 20f;
-                Vector3 objectPos = Camera.main.ScreenToWorldPoint(mousePos);
-                GameObject controlPoint = Instantiate(cp, objectPos, Quaternion.identity);
-                ControlPointsTransform.Add(controlPoint.transform);
-                ResetCurve();
-                TryDrawCurve();
-            }
+            Vector3 mousePos = Input.mousePosition;
+            mousePos.z = 20f;
+            Vector3 objectPos = Camera.main.ScreenToWorldPoint(mousePos);
+            GameObject controlPoint = Instantiate(cp, objectPos, Quaternion.identity);
+            ControlPointsTransform.Add(controlPoint.transform);
+            ResetCurve();
+            TryDrawCurve();
         }
-
         if (Input.GetButtonDown("Fire2"))
         {
-
+            
             RaycastHit hit;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
             if (Physics.Raycast(ray, out hit))
             {
+                if(hit.collider.tag == "points")
+                {
+                    Destroy(hit.collider.transform.parent.gameObject);
+                }
                 Destroy(hit.collider.gameObject);
                 ControlPointsTransform.Remove(hit.collider.gameObject.transform);
+                
                 bezierCurvePoints = new List<Vector3>();
                 ResetCurve();
                 TryDrawCurve();
-
             }
         }
-
         if (Input.GetButton("Fire3"))
         {
             Vector3 mousePos = Input.mousePosition;
-
+            mousePos.z = 20f;
             Ray ray = Camera.main.ScreenPointToRay(mousePos);
+            Vector3 objectPos = Camera.main.ScreenToWorldPoint(mousePos);
             RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity))
+            if (Physics.Raycast(ray, out hit))
             {
-                hit.collider.gameObject.transform.position = hit.point;
-                print(hit.collider.gameObject.transform.position);
-
+                
+                hit.collider.gameObject.transform.position = objectPos;
+                bezierCurvePoints = new List<Vector3>();
+                ResetCurve();
+                TryDrawCurve();
             }
         }
 
     }
 
+
     public void ResetCurve()
     {
-        GameObject[] points = GameObject.FindGameObjectsWithTag("points");
-        for(int i = 0; i < points.Length; i++)
+        List<GameObject> points = objectPositions;
+        for(int i = 0; i < points.Count; i++)
         {
             Destroy(points[i]);
         }
     }
-
-    public void FlushLists()
-    {
-        bezierCurvePoints = new List<Vector3>();
-        ControlPointsTransform = new List<Transform>();
-    }
-
     public void TryDrawCurve()
     {
-        List<GameObject> objectPositions = new List<GameObject>();
+        objectPositions = new List<GameObject>();
 
         for (t = 0; t <= 1.0f; t += s)
         {
