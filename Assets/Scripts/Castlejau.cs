@@ -31,12 +31,15 @@ public class Castlejau : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(s < 0f)
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            s = 0f;
-        }else if(s > 1f)
+            s -= 0.005f;
+            if (s <= 0) s = 0.001f;
+        }
+        if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            s = 1f;
+            s += 0.005f;
+            if (s >= 1) s = 0.999f;
         }
         if (Input.GetKeyDown("z"))
         {
@@ -52,22 +55,45 @@ public class Castlejau : MonoBehaviour
             ControlPointsTransform = new List<Transform>();
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            s -= 0.1f;
-        }
-        if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            s += 0.1f;
-        }
 
         if (Input.GetButtonDown("Fire1"))
         {
             Vector3 mousePos = Input.mousePosition;
-            mousePos.z = 10f;
+            mousePos.z = 20f;
             Vector3 objectPos = Camera.main.ScreenToWorldPoint(mousePos);
             GameObject controlPoint = Instantiate(cp, objectPos, Quaternion.identity);
             ControlPointsTransform.Add(controlPoint.transform);
+            ResetCurve();
+            TryDrawCurve();
+        }
+        if (Input.GetButtonDown("Fire2"))
+        {
+            
+            RaycastHit hit;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                Destroy(hit.collider.gameObject);
+                ControlPointsTransform.Remove(hit.collider.gameObject.transform);
+                bezierCurvePoints = new List<Vector3>();
+                ResetCurve();
+                TryDrawCurve();
+            }
+        }
+        if (Input.GetButton("Fire3"))
+        {
+            Vector3 mousePos = Input.mousePosition;
+            
+            Ray ray = Camera.main.ScreenPointToRay(mousePos);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit,Mathf.Infinity))
+            {
+                hit.collider.gameObject.transform.position = hit.point;
+                print(hit.collider.gameObject.transform.position);
+                //ResetCurve();
+                //TryDrawCurve();
+            }
         }
 
     }
@@ -83,11 +109,29 @@ public class Castlejau : MonoBehaviour
     }
     public void TryDrawCurve()
     {
-        for (t = 0; t <= 1; t += s)
+        List<GameObject> objectPositions = new List<GameObject>();
+
+        for (t = 0; t <= 1.0f; t += s)
         {
             Vector3 vec = getBezierPoint(t, ControlPointsTransform);
             bezierCurvePoints.Add(vec);
             GameObject pointBez = Instantiate(prefab, vec, Quaternion.identity);
+            objectPositions.Add(pointBez);
+        }
+
+        for (int i = 0; i < objectPositions.Count - 1; i++)
+        {
+            LineRenderer line = objectPositions[i].AddComponent<LineRenderer>();
+            GameObject nextPoint = objectPositions[i + 1];
+
+            line.startWidth = 0.2f;
+            line.endWidth = 0.2f;
+            line.positionCount = 2;
+            line.startColor = Color.yellow;
+            line.endColor = Color.yellow;
+
+            line.SetPosition(0, objectPositions[i].transform.position);
+            line.SetPosition(1, nextPoint.transform.position);
         }
     }
 
