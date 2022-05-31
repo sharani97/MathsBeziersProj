@@ -5,17 +5,16 @@ using UnityEngine;
 public class Casteljau : MonoBehaviour
 {
 
-    #region Members 
+    #region Members
+
     //PUBLIC
-    public List<Transform> ControlPointsTransform;
+    public List<GameObject> ControlPointsTransform;
     public Color MaterialColor;
     public int stepLength = 5;
 
     //PRIVATE
-    private List<Vector3> coordsList;
-    private List<Vector3> defaultCoords;
-    private List<Vector3> tempCoord;
-    private List<Vector3> tempCoordPerStep;
+    private List<Vector3> bezierCurvePoints;
+    private List<Vector3> curvePoints;
     private float step;
     private float t;
     private int point;
@@ -28,44 +27,49 @@ public class Casteljau : MonoBehaviour
     {
         step = 1 / stepLength;
         n = ControlPointsTransform.Count;
-        coordsList = new List<Vector3>();
-        defaultCoords = new List<Vector3>();
-        tempCoord = new List<Vector3>();
-        tempCoordPerStep = new List<Vector3>();
+        bezierCurvePoints = new List<Vector3>();
 
-        defaultCoords.Add(ControlPointsTransform[0].position);
-        defaultCoords.Add(ControlPointsTransform[1].position);
-        defaultCoords.Add(ControlPointsTransform[2].position);
-        defaultCoords.Add(ControlPointsTransform[3].position);
-
-        
         for (t = 0; t<=1; t+=step)
         {
 
-            tempCoord = defaultCoords;
-
-            for(etape = 1; etape <= n; etape++)
-            {
-                tempCoordPerStep.Clear();
-
-                for(point = 0; point <= n - etape ; point++)
-                {
-                    tempCoordPerStep.Add((1 - t) * tempCoord[point] + t * tempCoord[point+1]);
-                    Debug.Log(tempCoordPerStep);
-                }
-                tempCoord = tempCoordPerStep;
-            }
-            coordsList.Add(tempCoord[0]);
         }
         
-        Debug.Log(coordsList.Count);
     }
 
-    /*
+
+    private Vector3 getBezierPoint(float time, List<Vector3> controlPointsList)
+    {
+        curvePoints = new List<Vector3>();
+
+        for (etape = n - 1; etape >= 0; etape--)
+        {
+            if (etape == n - 1)
+            {
+                for (int k = 0; k <= n - 1; k++) curvePoints.Add(controlPointsList[k]);
+                continue;
+            }
+
+            int last = curvePoints.Count;  //our last index in the last list
+            int lvl = etape + 2;                     //our level is count - 1 so we need to add 2 to be on +1
+            int index = last - lvl;                  //find our current index
+
+            for (point = 0; point <= etape; point++)
+            {
+                Vector3 p = time * curvePoints[index + 1] + (1 - time) * curvePoints[index];
+                curvePoints.Add(p);
+            }
+
+        }
+
+        return curvePoints[curvePoints.Count - 1];
+    }
+
+
+    
     // Update is called once per frame
     void Update()
     {
         
     }
-    */
+    
 }
