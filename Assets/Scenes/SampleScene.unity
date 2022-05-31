@@ -614,10 +614,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ControlPointsTransform:
-  - {fileID: 613708823}
-  - {fileID: 1495628859}
-  - {fileID: 585691225}
-  - {fileID: 1236212915}
+  - {fileID: 613708827}
+  - {fileID: 1495628863}
+  - {fileID: 585691229}
+  - {fileID: 1236212919}
   MaterialColor: {r: 0, g: 0, b: 0, a: 0}
   stepLength: 5
 --- !u!4 &1259939377

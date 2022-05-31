@@ -8,30 +8,36 @@ public class Casteljau : MonoBehaviour
     #region Members
 
     //PUBLIC
-    public List<GameObject> ControlPointsTransform;
+    public List<Transform> ControlPointsTransform;
     public Color MaterialColor;
     public int stepLength = 5;
 
     //PRIVATE
     private List<Vector3> bezierCurvePoints;
     private List<Vector3> curvePoints;
+    private List<Vector3> controlPointsVector;
     private float step;
     private float t;
-    private int point;
-    private int etape;
-    private int n;
 
     #endregion Members
 
     void Start()
     {
         step = 1 / stepLength;
-        n = ControlPointsTransform.Count;
+        controlPointsVector = new List<Vector3>();
         bezierCurvePoints = new List<Vector3>();
+
+        foreach(var c in ControlPointsTransform)
+        {
+            controlPointsVector.Add(c.position);
+        }
+
 
         for (t = 0; t<=1; t+=step)
         {
-
+            Vector3 vec = getBezierPoint(t, controlPointsVector);
+            Debug.Log(vec);
+            bezierCurvePoints.Add(vec);
         }
         
     }
@@ -39,29 +45,37 @@ public class Casteljau : MonoBehaviour
 
     private Vector3 getBezierPoint(float time, List<Vector3> controlPointsList)
     {
+        var degree = controlPointsList.Count - 1;
+
         curvePoints = new List<Vector3>();
 
-        for (etape = n - 1; etape >= 0; etape--)
+        for (int etape = degree; etape >= 0; etape--)
         {
-            if (etape == n - 1)
+            if (etape == degree)
             {
-                for (int k = 0; k <= n - 1; k++) curvePoints.Add(controlPointsList[k]);
+                for (int k = 0; k <= degree; k++)
+                {
+                    curvePoints.Add(controlPointsList[k]);
+                }
                 continue;
             }
+            
 
-            int last = curvePoints.Count;  //our last index in the last list
+            int last = curvePoints.Count;            //our last index in the last list
             int lvl = etape + 2;                     //our level is count - 1 so we need to add 2 to be on +1
             int index = last - lvl;                  //find our current index
 
-            for (point = 0; point <= etape; point++)
+            for (int point = 0; point <= etape; point++)
             {
-                Vector3 p = time * curvePoints[index + 1] + (1 - time) * curvePoints[index];
+                Vector3 p = (1 - time) * curvePoints[index] + time * curvePoints[index + 1]; ;
                 curvePoints.Add(p);
+                ++index;
             }
 
         }
 
-        return curvePoints[curvePoints.Count - 1];
+        int lastElmnt = curvePoints.Count - 1;
+        return curvePoints[lastElmnt];
     }
 
 
