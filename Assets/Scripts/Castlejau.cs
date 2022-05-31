@@ -14,16 +14,16 @@ public class Castlejau : MonoBehaviour
     public GameObject prefab,cp;
 
     //PRIVATE
+    [SerializeField]
+    private Dictionary<List<Transform>, List<GameObject>> Dic = new Dictionary<List<Transform>, List<GameObject>>();
+    private List<GameObject> objectPositions = new List<GameObject>();
     private List<Vector3> bezierCurvePoints;
-    private List<Vector3> curvePoints;
-    private List<Vector3> controlPointsVector;
     private float t;
 
     #endregion Members
 
     void Start()
     {
-        controlPointsVector = new List<Vector3>();
         bezierCurvePoints = new List<Vector3>();
     }
 
@@ -51,8 +51,23 @@ public class Castlejau : MonoBehaviour
         }
         if (Input.GetKeyDown("x"))
         {
+            Dic.TryAdd(ControlPointsTransform, objectPositions);
+
+            GameObject parent = new GameObject();
+            foreach(GameObject obj in objectPositions)
+            {
+                obj.transform.parent = parent.transform;
+            }
+            foreach (Transform obj in ControlPointsTransform)
+            {
+                obj.parent = parent.transform;
+            }
+
+
             bezierCurvePoints = new List<Vector3>();
+            objectPositions = new List<GameObject>();
             ControlPointsTransform = new List<Transform>();
+            
         }
 
 
@@ -74,8 +89,13 @@ public class Castlejau : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit))
             {
+                if(hit.collider.tag == "points")
+                {
+                    Destroy(hit.collider.transform.parent.gameObject);
+                }
                 Destroy(hit.collider.gameObject);
                 ControlPointsTransform.Remove(hit.collider.gameObject.transform);
+                
                 bezierCurvePoints = new List<Vector3>();
                 ResetCurve();
                 TryDrawCurve();
@@ -84,15 +104,17 @@ public class Castlejau : MonoBehaviour
         if (Input.GetButton("Fire3"))
         {
             Vector3 mousePos = Input.mousePosition;
-            
+            mousePos.z = 20f;
             Ray ray = Camera.main.ScreenPointToRay(mousePos);
+            Vector3 objectPos = Camera.main.ScreenToWorldPoint(mousePos);
             RaycastHit hit;
-            if (Physics.Raycast(ray, out hit,Mathf.Infinity))
+            if (Physics.Raycast(ray, out hit))
             {
-                hit.collider.gameObject.transform.position = hit.point;
-                print(hit.collider.gameObject.transform.position);
-                //ResetCurve();
-                //TryDrawCurve();
+                
+                hit.collider.gameObject.transform.position = objectPos;
+                bezierCurvePoints = new List<Vector3>();
+                ResetCurve();
+                TryDrawCurve();
             }
         }
 
@@ -101,15 +123,15 @@ public class Castlejau : MonoBehaviour
 
     public void ResetCurve()
     {
-        GameObject[] points = GameObject.FindGameObjectsWithTag("points");
-        for(int i = 0; i < points.Length; i++)
+        List<GameObject> points = objectPositions;
+        for(int i = 0; i < points.Count; i++)
         {
             Destroy(points[i]);
         }
     }
     public void TryDrawCurve()
     {
-        List<GameObject> objectPositions = new List<GameObject>();
+        objectPositions = new List<GameObject>();
 
         for (t = 0; t <= 1.0f; t += s)
         {
