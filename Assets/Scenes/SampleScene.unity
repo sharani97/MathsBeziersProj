@@ -1032,6 +1032,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ControlPointsTransform: []
+  MaterialColor: {r: 0, g: 0, b: 0, a: 0}
   s: 0.2
   prefab: {fileID: 5744692602420254133, guid: 6dd4517297595624f93106f1858bf529, type: 3}
   cp: {fileID: 7907325791130423726, guid: 08c5207e42d872246bc8df63e6bbe75c, type: 3}

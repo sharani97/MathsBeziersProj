@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Castlejau : MonoBehaviour
 {
@@ -12,6 +13,7 @@ public class Castlejau : MonoBehaviour
     public Color MaterialColor;
     public float s = 0.2f;
     public GameObject prefab,cp;
+    public Slider slider;
 
     //PRIVATE
     [SerializeField]
@@ -19,18 +21,20 @@ public class Castlejau : MonoBehaviour
     private List<GameObject> objectPositions = new List<GameObject>();
     private List<Vector3> bezierCurvePoints;
     private float t;
-
+    private bool isPlacementEnabeled=true;
     #endregion Members
 
     void Start()
     {
         bezierCurvePoints = new List<Vector3>();
+        slider.value=s;
     }
 
 
     // Update is called once per frame
     void Update()
     {
+        s=slider.value;
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             s -= 0.005f;
@@ -49,9 +53,13 @@ public class Castlejau : MonoBehaviour
         {
             ResetCurve();
         }
+         if (Input.GetKeyDown("a"))
+        {
+            isPlacementEnabeled=!isPlacementEnabeled;
+        }
         if (Input.GetKeyDown("x"))
         {
-            Dic.TryAdd(ControlPointsTransform, objectPositions);
+            Dic.Add(ControlPointsTransform, objectPositions);
 
             GameObject parent = new GameObject();
             foreach(GameObject obj in objectPositions)
@@ -73,6 +81,8 @@ public class Castlejau : MonoBehaviour
 
         if (Input.GetButtonDown("Fire1"))
         {
+
+            if (isPlacementEnabeled){
             Vector3 mousePos = Input.mousePosition;
             mousePos.z = 20f;
             Vector3 objectPos = Camera.main.ScreenToWorldPoint(mousePos);
@@ -80,6 +90,7 @@ public class Castlejau : MonoBehaviour
             ControlPointsTransform.Add(controlPoint.transform);
             ResetCurve();
             TryDrawCurve();
+            }
         }
         if (Input.GetButtonDown("Fire2"))
         {
@@ -118,6 +129,27 @@ public class Castlejau : MonoBehaviour
             }
         }
 
+    }
+
+  public void FlushLists()
+    {
+         Dic.Add(ControlPointsTransform, objectPositions);
+
+            GameObject parent = new GameObject();
+            foreach(GameObject obj in objectPositions)
+            {
+                obj.transform.parent = parent.transform;
+            }
+            foreach (Transform obj in ControlPointsTransform)
+            {
+                obj.parent = parent.transform;
+            }
+
+
+            bezierCurvePoints = new List<Vector3>();
+            objectPositions = new List<GameObject>();
+            ControlPointsTransform = new List<Transform>();
+            
     }
 
 
@@ -188,4 +220,5 @@ public class Castlejau : MonoBehaviour
         return bezierPoints[lastElmnt];
     }
 
+  
 }
